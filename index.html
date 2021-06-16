@@ -14,17 +14,22 @@
         background-color: white;
       }
     </style>
-    
+
     <script type="text/javascript" src="lib/utils.js"></script>
     <script type="text/javascript" src="lib/block.js"></script>
     <script type="text/javascript" src="lib/view.js"></script>
     <script type="text/javascript" src="lib/controller.js"></script>
+    <script type="text/javascript" src="lib/jsonHandler.js"></script>
     <script type="text/javascript" src="lib/main.js"></script>
 </head>
 
 
 <body>
-  <p>Use arrow keys to move cursor and enter to add a square</p>
+  <div>Use arrow keys to move cursor and enter to add a square
+      <button onclick="saveWorld()">Save world</button>
+      <input type="text" id="json"  value="" />
+      <button onclick="loadWorld()">Load raw json</button>
+      </div>
   <canvas id="c"></canvas>
 
 </body>
