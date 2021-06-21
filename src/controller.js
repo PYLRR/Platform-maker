@@ -64,14 +64,14 @@ function keyDownFunction(e){
             break;
         case 68:  // d : for play mode
             if(PLAY_MODE){
-                ghostSpeedX = ghostMaxSpeed;
-                lastUpdateX = (new Date).getTime();
+                ghost.speedX = ghost.maxSpeed;
+                ghost.lastUpdateX = (new Date).getTime();
             }
             break;
         case 81: // q : for play mode
             if(PLAY_MODE){
-                ghostSpeedX = -ghostMaxSpeed;
-                lastUpdateX = (new Date).getTime();
+                ghost.speedX = -ghost.maxSpeed;
+                ghost.lastUpdateX = (new Date).getTime();
             }
             break;
         case 82:  // r : change texture of a block
@@ -88,14 +88,14 @@ function keyDownFunction(e){
             break;
         case 83:  // s : for play mode
             if(PLAY_MODE){
-                ghostSpeedZ = ghostMaxSpeed;
-                lastUpdateZ = (new Date).getTime();
+                ghost.speedZ = ghost.maxSpeed;
+                ghost.lastUpdateZ = (new Date).getTime();
             }
             break;
         case 90: // z : for play mode
             if(PLAY_MODE){
-                ghostSpeedZ = -ghostMaxSpeed;
-                lastUpdateZ = (new Date).getTime();
+                ghost.speedZ = -ghost.maxSpeed;
+                ghost.lastUpdateZ = (new Date).getTime();
             }
             break;
 
@@ -123,6 +123,7 @@ function keyDownFunction(e){
         cursor.vertices[i+1]+=deltay*STEP;
         cursor.vertices[i+2]+=deltaz*STEP;
     }
+    cursor.updateBuffers();
 
     window.requestAnimationFrame(drawScene);
 }
@@ -132,19 +133,19 @@ function keyUpFunction(e){
     switch (e.keyCode) {
         case 68:  // d : for play mode
             if(PLAY_MODE)
-                ghostSpeedX = 0;
+                ghost.speedX = 0;
             break;
         case 81: // q : for play mode
             if(PLAY_MODE)
-                ghostSpeedX = 0;
+                ghost.speedX = 0;
             break;
         case 83:  // s : for play mode
             if(PLAY_MODE)
-                ghostSpeedZ = 0;
+                ghost.speedZ = 0;
             break;
         case 90: // z : for play mode
             if(PLAY_MODE)
-                ghostSpeedZ = 0;
+                ghost.speedZ = 0;
             break;
 
     }

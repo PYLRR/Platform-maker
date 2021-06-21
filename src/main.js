@@ -21,40 +21,7 @@ var MAX_Z = 100;
 PLAY_MODE = false;
 
 // Ghost
-// Load ghost mesh using the webgl-obj-loader library
-ghostMesh = new OBJ.Mesh(objStr);
-// correction of vertices
-for(let i=0; i<ghostMesh.vertices.length; i+=3){
-  // scales the ghost
-  ghostMesh.vertices[i] *= STEP/1.25;
-  ghostMesh.vertices[i+1] *= STEP/1.25;
-  ghostMesh.vertices[i+2] *= STEP/1.25;
-  // rotates the ghost (it is not horizontal when loaded)
-  ghostMesh.vertices[i+1] = Math.cos(0.14)*ghostMesh.vertices[i+1] + Math.sin(0.14)*ghostMesh.vertices[i+2];
-  ghostMesh.vertices[i+2] = Math.cos(0.14)*ghostMesh.vertices[i+2] - Math.sin(0.14)*ghostMesh.vertices[i+1];
-}
-// ghost painted in white
-ghostColors=[];
-for(let i=0; i<ghostMesh.vertices.length*3; i++){
-  ghostColors.push(1.0);
-}
-// coordinates in the world space (and not cube grid)
-ghostX=STEP/2;
-ghostY=STEP+0.5*STEP/1.25;
-ghostZ=STEP/2;
-// ghost matrices
-ghostTranslate=utils.MakeTranslateMatrix(ghostX,ghostY,ghostZ);
-ghostQuaternion=Quaternion.fromEuler(utils.degToRad(0),utils.degToRad(0),utils.degToRad(-90), order="ZXY");
-// ghost displacement
-ghostMaxSpeed=STEP;
-ghostSpeedX=0;
-ghostSpeedY=0;
-ghostSpeedZ=0;
-lastUpdateX=0;
-lastUpdateY=0;
-lastUpdateZ=0;
-
-
+var ghost;
 
 //Parameters cursor. Its coordinates are in the global grid
 var cursorColor = [0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,
@@ -63,7 +30,7 @@ var cursorColor = [0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,
   0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,
   0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,
   0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0];
-var cursor = makeBlock(0,0,0,0,cursorColor);
+var cursor;
 
 //Parameters for blocks
 var blocks = [];
@@ -81,6 +48,7 @@ var textureIDEnum = Object.freeze(
     ["dirt","sand"]
 );
 var texturesVector = []; // will contain the different textures
+
 
 //Parameters for Camera
 // translation offsets of rotation center. Beginning at STEP/2 to center on the block (0,0)
@@ -190,11 +158,12 @@ void main() {
   outColor = vec4(out_color.rgb, 1.0);
 }
 `;
-
-
+var posb;
+var cb;
+var nb;
+var ib;
 
 function main() {
-
   // Removes default behavior of arrow keys and space bar
   window.addEventListener("keydown", function(e) {
       // space and arrow keys
@@ -263,7 +232,6 @@ function main() {
       }
     });
   }
-
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
   // look up where the vertex data needs to go.
@@ -283,8 +251,10 @@ function main() {
   specShineLocation = gl.getUniformLocation(program, "SpecShine");
   ambientLightColorLocation = gl.getUniformLocation(program, "ambientLightColor");
 
-}
 
+  cursor = makeBlock(0,0,0,0,cursorColor);
+  ghost = new Ghost();
+}
 
 
 window.onload = main;

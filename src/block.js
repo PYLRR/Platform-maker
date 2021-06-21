@@ -47,5 +47,32 @@ class Block {
         this.colors = colors;
         this.texture = texture;
         this.UVcoordinates = UVcoordinates;
+
+        // init buffers
+        this.positionBuffer = gl.createBuffer();
+        this.colorBuffer = gl.createBuffer();
+        this.uvBuffer = gl.createBuffer();
+        this.normalsBuffer = gl.createBuffer();
+        this.indicesBuffer = gl.createBuffer();
+        this.updateBuffers();
+    }
+
+    updateBuffers(){
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.STATIC_DRAW);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.UVcoordinates), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(uvAttributeLocation);
+        gl.vertexAttribPointer(uvAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.normalsBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.STATIC_DRAW);
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
     }
 }

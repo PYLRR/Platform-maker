@@ -17,6 +17,13 @@ var directionalLightTransformed;
 
 function drawScene() {
 
+    if(PLAY_MODE){
+        cx = ghost.x;
+        cy = ghost.y;
+        cz = ghost.z;
+    }
+
+
 
     worldMatrix = utils.MakeWorld(0.0,0.0,0.0,0.0,0.0,Rz,S);
 
@@ -54,71 +61,59 @@ function drawScene() {
     gl.uniformMatrix4fv(tMatrixLocation, gl.FALSE, utils.identityMatrix());
 
     // cursor
-    drawObject(cursor.vertices,cursor.indices,cursor.colors, cursor.UVcoordinates, cursor.normals, gl.TRIANGLES,cursor.texture);
+    drawObject(cursor.positionBuffer, cursor.indicesBuffer, cursor.indices.length, cursor.colorBuffer,
+        cursor.uvBuffer, cursor.normalsBuffer, gl.TRIANGLES, cursor.texture);
 
     // blocks
     for(var i = 0; i<blocks.length; i++) {
-        drawObject(blocks[i].vertices, blocks[i].indices, blocks[i].colors, blocks[i].UVcoordinates, blocks[i].normals, gl.TRIANGLES,blocks[i].texture);
+        drawObject(blocks[i].positionBuffer, blocks[i].indicesBuffer, blocks[i].indices.length, blocks[i].colorBuffer,
+            blocks[i].uvBuffer, blocks[i].normalsBuffer, gl.TRIANGLES,blocks[i].texture);
     }
 
     // ghost
-    // compute current transforms
-    currentTime = (new Date).getTime();
-    deltaX = (currentTime - lastUpdateX) / 1000.0;
-    deltaY = (currentTime - lastUpdateY) / 1000.0;
-    deltaZ = (currentTime - lastUpdateZ) / 1000.0;
-    ghostX += deltaX*ghostSpeedX;
-    ghostY += deltaY*ghostSpeedY;
-    ghostZ += deltaZ*ghostSpeedZ;
-    lastUpdateX = currentTime;
-    lastUpdateY = currentTime;
-    lastUpdateZ = currentTime;
-    ghostTranslate = utils.MakeTranslateMatrix(ghostX,ghostY,ghostZ);
-    // set transforms
-    gl.uniformMatrix4fv(tMatrixLocation, gl.FALSE, utils.transposeMatrix(
-        utils.multiplyMatrices(ghostTranslate,ghostQuaternion.toMatrix4()))
-    );
     if(PLAY_MODE) {
-        drawObject(ghostMesh.vertices, ghostMesh.indices, ghostColors, null, ghostMesh.vertexNormals, gl.TRIANGLES, 0);
+        // compute current transforms given current time
+        ghost.computeTranslate();
+
+        // set transforms
+        gl.uniformMatrix4fv(tMatrixLocation, gl.FALSE, utils.transposeMatrix(
+            utils.multiplyMatrices(ghost.translate,ghost.quaternion.toMatrix4()))
+        );
+
+        drawObject(ghost.positionBuffer, ghost.indicesBuffer, ghost.indices.length ,ghost.colorBuffer,
+            null, ghost.normalsBuffer, gl.TRIANGLES, 0);
     }
 
+    //setTimeout(drawScene,100);
     window.requestAnimationFrame(drawScene);
 }
 
-function drawObject(vertices, indices, colors, UVcoordinates, normals, mode, texture){
+function drawObject(positionBuffer, indicesBuffer, nbIndices, colorBuffer, uvBuffer, normalsBuffer, mode, texture){
     //Set for texture
     gl.bindTexture(gl.TEXTURE_2D, texturesVector[texture]);
     gl.uniform1i(textLocation, 0);
 
-    var positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(positionAttributeLocation);
     gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 
 
-    var colorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(colorAttributeLocation);
     gl.vertexAttribPointer(colorAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 
-    var uvBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(UVcoordinates), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(uvAttributeLocation);
-    gl.vertexAttribPointer(uvAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+    if(uvBuffer != null) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+        gl.enableVertexAttribArray(uvAttributeLocation);
+        gl.vertexAttribPointer(uvAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+    }
 
-    var normalBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalsBuffer);
     gl.enableVertexAttribArray(normalAttributeLocation);
     gl.vertexAttribPointer(normalAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 
     // blocks
-    var indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
 
-    gl.drawElements(mode, indices.length, gl.UNSIGNED_SHORT, 0 );
+    gl.drawElements(mode, nbIndices, gl.UNSIGNED_SHORT, 0 );
 }
