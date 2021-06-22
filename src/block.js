@@ -76,3 +76,19 @@ class Block {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
     }
 }
+
+
+
+
+
+
+// utility function to create the color
+function createColorForBlock(R,G,B,alpha){
+    res=[];
+    for(let i=0; i<24; i++){
+        res.push(R);
+        res.push(G);
+        res.push(B);
+    }
+    return res;
+}

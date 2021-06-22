@@ -8,7 +8,8 @@ var projectionMatrix,
   perspectiveMatrix,
   viewMatrix, worldMatrix,
   positionAttributeLocation, colorAttributeLocation,uvAttributeLocation,textLocation,normalAttributeLocation,
-  dirLocation,lightColorLocation,eyePosLocation,specularColorLocation,specShineLocation,ambientLightColorLocation;
+  dirLocation,lightColorLocation,eyePosLocation,specularColorLocation,specShineLocation,ambientLightColorLocation,
+  transparencyLocation;
 
 //Objects will be localized in a grid of squares of this size, centralized at opengl (0,0)
 var STEP = 0.25;
@@ -24,23 +25,16 @@ PLAY_MODE = false;
 var ghost;
 
 //Parameters cursor. Its coordinates are in the global grid
-var cursorColor = [0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,
-  0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,
-  0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,
-  0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,
-  0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,
-  0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0];
+var cursorColor = createColorForBlock(0.5,0.5,1.0);
+
+
+
 var cursor;
 
 //Parameters for blocks
 var blocks = [];
 var blockAtCoord = new Map(); // to find a block with its coords. Key must me x+y*(maxX+1)+z*(maxY*(maxX+1)+1)
-var blockDefaultColor = [1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,
-  1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,
-  1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,
-  1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,
-  1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,
-  1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0];
+var blockDefaultColor = createColorForBlock(1.0,1.0,1.0);
 
 //List of available textures, freeze is to avoid we modify it
 //There should be a file called NAMETEXTUREcube.png
@@ -114,6 +108,7 @@ uniform vec4 lightColor;
 uniform vec4 specularColor;
 uniform vec4 ambientLightColor;
 uniform float SpecShine;
+uniform float Transparency;
 uniform vec3 eyePos;
 
 out vec4 outColor;
@@ -155,7 +150,7 @@ void main() {
 	vec4 specular = compSpecular(nLightDirection, lightColor, normalVec, eyedirVec);
   vec4 out_color = clamp(ambient + diffuse + specular, 0.0, 1.0);
 
-  outColor = vec4(out_color.rgb, 1.0);
+  outColor = vec4(out_color.rgb, Transparency);
 }
 `;
 var posb;
@@ -164,6 +159,7 @@ var nb;
 var ib;
 
 function main() {
+
   // Removes default behavior of arrow keys and space bar
   window.addEventListener("keydown", function(e) {
       // space and arrow keys
@@ -250,6 +246,7 @@ function main() {
   specularColorLocation = gl.getUniformLocation(program, "specularColor");
   specShineLocation = gl.getUniformLocation(program, "SpecShine");
   ambientLightColorLocation = gl.getUniformLocation(program, "ambientLightColor");
+  transparencyLocation = gl.getUniformLocation(program, "Transparency");
 
 
   cursor = makeBlock(0,0,0,0,cursorColor);
