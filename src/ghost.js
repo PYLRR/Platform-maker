@@ -28,19 +28,13 @@ class Ghost {
         }
 
         this.x=STEP/2;
-        this.y=STEP+0.5*STEP/1.25;
+        this.y=STEP*1.4;
         this.z=STEP/2;
 
         this.translate=utils.MakeTranslateMatrix(this.x,this.y,this.z);
         this.quaternion=Quaternion.fromEuler(utils.degToRad(0),utils.degToRad(0),utils.degToRad(-90), "ZXY");
 
         this.maxSpeed=STEP*5;
-        this.speedX=0;
-        this.speedY=0;
-        this.speedZ=0;
-        this.lastUpdateX=0;
-        this.lastUpdateY=0;
-        this.lastUpdateZ=0;
 
         // init buffers
         this.positionBuffer = gl.createBuffer();
@@ -65,17 +59,54 @@ class Ghost {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
     }
 
+    // initialize variables such as lastUpdate (important for gravity !)
+    init(){
+        this.speedX=0;
+        this.speedY=-this.maxSpeed;
+        this.speedZ=0;
+
+        let now = (new Date).getTime();
+        this.lastUpdate=now;
+    }
+
     computeTranslate(){
         currentTime = (new Date).getTime();
-        let deltaX = (currentTime - this.lastUpdateX) / 1000.0;
-        let deltaY = (currentTime - this.lastUpdateY) / 1000.0;
-        let deltaZ = (currentTime - this.lastUpdateZ) / 1000.0;
-        this.x += deltaX*this.speedX;
-        this.y += deltaY*this.speedY;
-        this.z += deltaZ*this.speedZ;
-        this.lastUpdateX = currentTime;
-        this.lastUpdateY = currentTime;
-        this.lastUpdateZ = currentTime;
+        let delta = (currentTime - this.lastUpdate) / 1000.0;
+
+        let dx = delta * this.speedX;
+        let dz = delta * this.speedZ;
+        // y is a special case : we have to take gravity into account
+        let dy = delta * this.speedY;
+        if(this.speedY>-this.maxSpeed){
+            dy += Math.pow(delta,2)*GRAVITY_A/2;
+            this.speedY = Math.max(-this.maxSpeed,this.speedY+delta*GRAVITY_A);
+        }
+
+        // formulas of expected coordinates : current+speed+offsetGhostDimensions+offsetStartingPos
+        let dirx = Math.sign(this.speedX/this.maxSpeed);
+        let xGrid = Math.ceil(ghost.x/STEP)-1;
+        let xGridExpected = Math.ceil(ghost.x/STEP+dx/STEP+7*dirx/16-0.95);
+
+        let diry = Math.sign(dy/this.maxSpeed);
+        let yGrid = Math.ceil(ghost.y/STEP)-1;
+        let yGridExpected = Math.ceil(ghost.y/STEP+dy/STEP+diry/2-0.85);
+
+        let dirz = Math.sign(this.speedZ/this.maxSpeed);
+        let zGrid = Math.ceil(ghost.z/STEP)-1;
+        let zGridExpected = Math.ceil(ghost.z/STEP+dz/STEP+dirz/2-0.9);
+
+        if(getBlockAt(xGridExpected, yGrid, zGrid) == null) {
+            this.x += dx;
+        }
+        if(getBlockAt(xGrid, yGrid, zGridExpected) == null) {
+            this.z += dz;
+        }
+        if(getBlockAt(xGrid, yGridExpected, zGrid) == null) {
+            this.y += dy;
+        }
+
+
+        this.lastUpdate = currentTime;
         this.translate = utils.MakeTranslateMatrix(this.x,this.y,this.z);
     }
 }

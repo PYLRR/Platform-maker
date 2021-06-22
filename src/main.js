@@ -17,6 +17,8 @@ var MAX_X = 100;
 var MAX_Y = 100;
 var MAX_Z = 100;
 
+var GRAVITY_A = -STEP*10;
+
 // Control parameters
 // boolean telling if we are playing
 PLAY_MODE = false;

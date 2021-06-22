@@ -2,9 +2,11 @@
 function loadWorld(){
     var json = document.getElementById('json').value;
 
-    blocks = JSON.parse(json);
+    blockList = JSON.parse(json);
+    blockList.forEach(block => {
+        addBlock(block.x, block.y, block.z, block.texture, block.colors);
+    });
     console.log("json loaded");
-    drawScene();
 }
 
 // to use click on save, it will output a json saving the array "blocks"

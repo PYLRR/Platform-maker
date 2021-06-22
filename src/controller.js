@@ -34,8 +34,14 @@ function keyDownFunction(e){
         case 17: // ctrl
             deltay=-1;
             break;
-        case 32:  // space
+        case 32:  // space : switch to PLAY MODE
             PLAY_MODE = true;
+            window.removeEventListener("keyup", keyUpFunction, false);
+            window.removeEventListener("keydown", keyDownFunction, false);
+            window.addEventListener("keyup", keyUpPlayFunction, false);
+            window.addEventListener("keydown", keyDownPlayFunction, false);
+            elevation = -20;
+            ghost.init();
             break;
         case 37:  // left
             deltax=-1;
@@ -62,18 +68,6 @@ function keyDownFunction(e){
                 console.log("no block to remove");
             }
             break;
-        case 68:  // d : for play mode
-            if(PLAY_MODE){
-                ghost.speedX = ghost.maxSpeed;
-                ghost.lastUpdateX = (new Date).getTime();
-            }
-            break;
-        case 81: // q : for play mode
-            if(PLAY_MODE){
-                ghost.speedX = -ghost.maxSpeed;
-                ghost.lastUpdateX = (new Date).getTime();
-            }
-            break;
         case 82:  // r : change texture of a block
             block = getBlockAt(cursor.x, cursor.y, cursor.z);
             if(block != null){
@@ -86,19 +80,6 @@ function keyDownFunction(e){
                 console.log("texture of cursor changed to "+textureIDEnum[cursor.texture]);
             }
             break;
-        case 83:  // s : for play mode
-            if(PLAY_MODE){
-                ghost.speedZ = ghost.maxSpeed;
-                ghost.lastUpdateZ = (new Date).getTime();
-            }
-            break;
-        case 90: // z : for play mode
-            if(PLAY_MODE){
-                ghost.speedZ = -ghost.maxSpeed;
-                ghost.lastUpdateZ = (new Date).getTime();
-            }
-            break;
-
     }
     // trigonometric computations to change direction of cursor/camera translations depending on the current angle
     let ta = utils.degToRad(angle);
@@ -128,28 +109,97 @@ function keyDownFunction(e){
     window.requestAnimationFrame(drawScene);
 }
 
+
 // key release
 function keyUpFunction(e){
+}
+
+// key press when PLAY MODE is on
+function keyDownPlayFunction(e){
+    let deltax=0;
+    let deltay=0;
+    let deltaz=0;
     switch (e.keyCode) {
-        case 68:  // d : for play mode
-            if(PLAY_MODE)
-                ghost.speedX = 0;
+        case 13:  // enter
             break;
-        case 81: // q : for play mode
-            if(PLAY_MODE)
-                ghost.speedX = 0;
+        case 32:  // space
+            ghost.speedY = ghost.maxSpeed;
             break;
-        case 83:  // s : for play mode
-            if(PLAY_MODE)
-                ghost.speedZ = 0;
+        case 39:  // right
+        case 68:  // d
+            ghost.speedX = ghost.maxSpeed;
+            ghost.lastUpdate = (new Date).getTime();
             break;
-        case 90: // z : for play mode
-            if(PLAY_MODE)
-                ghost.speedZ = 0;
+        case 37:  // left
+        case 81: // q
+            ghost.speedX = -ghost.maxSpeed;
+            ghost.lastUpdate = (new Date).getTime();
+            break;
+        case 40:  // down
+        case 83:  // s
+            ghost.speedZ = ghost.maxSpeed;
+            ghost.lastUpdate = (new Date).getTime();
+            break;
+        case 38:  // up
+        case 90: // z
+            ghost.speedZ = -ghost.maxSpeed;
+            ghost.lastUpdate = (new Date).getTime();
+            break;
+
+    }
+    // trigonometric computations to change direction of cursor/camera translations depending on the current angle
+    let ta = utils.degToRad(angle);
+    let dx = Math.round(Math.cos(-ta)*deltax+Math.sin(-ta)*deltaz);
+    let dz = Math.round(-Math.sin(-ta)*deltax+Math.cos(-ta)*deltaz);
+
+    deltax=dx;
+    deltaz=dz;
+
+    cx += deltax*STEP;
+    cy += deltay*STEP;
+    cz += deltaz*STEP;
+
+    // updates cursor position in our grid coordinates system
+    cursor.x+=deltax;
+    cursor.y+=deltay;
+    cursor.z+=deltaz;
+
+    // updates cursor position in world coordinates handled by openGL
+    for(i=0; i<cursor.vertices.length; i+=3){
+        cursor.vertices[i]+=deltax*STEP;
+        cursor.vertices[i+1]+=deltay*STEP;
+        cursor.vertices[i+2]+=deltaz*STEP;
+    }
+    cursor.updateBuffers();
+
+    window.requestAnimationFrame(drawScene);
+}
+
+
+// key release when PLAY MODE is on
+function keyUpPlayFunction(e){
+    switch (e.keyCode) {
+        case 39:  // right
+        case 68:  // d
+            ghost.speedX = 0;
+            break;
+        case 37:  // left
+        case 81: // q
+            ghost.speedX = 0;
+            break;
+        case 40:  // down
+        case 83:  // s
+            ghost.speedZ = 0;
+            break;
+        case 38:  // up
+        case 90: // z
+            ghost.speedZ = 0;
             break;
 
     }
 }
+
+
 
 var mouseState = false;
 var lastMouseX = -100, lastMouseY = -100;

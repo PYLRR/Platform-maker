@@ -60,11 +60,13 @@ function drawScene() {
     // set transform to identity
     gl.uniformMatrix4fv(tMatrixLocation, gl.FALSE, utils.identityMatrix());
 
-    // set transparency for cursor
-    gl.uniform1f(transparencyLocation,0.75);
-    drawObject(cursor.positionBuffer, cursor.indicesBuffer, cursor.indices.length, cursor.colorBuffer,
-        cursor.uvBuffer, cursor.normalsBuffer, gl.TRIANGLES, cursor.texture);
-    gl.uniform1f(transparencyLocation,1.0); // unset transparency
+    // cursor
+    if(!PLAY_MODE) {
+        gl.uniform1f(transparencyLocation, 0.75);
+        drawObject(cursor.positionBuffer, cursor.indicesBuffer, cursor.indices.length, cursor.colorBuffer,
+            cursor.uvBuffer, cursor.normalsBuffer, gl.TRIANGLES, cursor.texture);
+        gl.uniform1f(transparencyLocation, 1.0); // unset transparency
+    }
 
     // blocks
     for(var i = 0; i<blocks.length; i++) {

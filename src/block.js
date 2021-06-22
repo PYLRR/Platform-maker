@@ -49,12 +49,16 @@ class Block {
         this.UVcoordinates = UVcoordinates;
 
         // init buffers
+        this.createBuffers();
+        this.updateBuffers();
+    }
+
+    createBuffers(){
         this.positionBuffer = gl.createBuffer();
         this.colorBuffer = gl.createBuffer();
         this.uvBuffer = gl.createBuffer();
         this.normalsBuffer = gl.createBuffer();
         this.indicesBuffer = gl.createBuffer();
-        this.updateBuffers();
     }
 
     updateBuffers(){
