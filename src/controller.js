@@ -1,3 +1,5 @@
+var currentlyRightClicking = false;
+
 // adds a cube where (x,y,z) is its bottom left and farest corner, with a given textureID and color. Adds it to the list
 function addBlock(x, y, z, textureID, colors) {
     if(blockAtCoord.has(x+y*(MAX_X+1)+z*(MAX_Y*(MAX_X+1)+1))){
@@ -123,55 +125,30 @@ function keyDownPlayFunction(e){
         case 13:  // enter
             break;
         case 32:  // space
-            ghost.speedY = ghost.maxSpeed;
+            ghost.changeSpeed(0,ghost.maxSpeed,0);
             break;
         case 39:  // right
         case 68:  // d
-            ghost.speedX = ghost.maxSpeed;
+            ghost.changeSpeed(ghost.maxSpeed,0,0);
             ghost.lastUpdate = (new Date).getTime();
             break;
         case 37:  // left
         case 81: // q
-            ghost.speedX = -ghost.maxSpeed;
+            ghost.changeSpeed(-ghost.maxSpeed,0,0);
             ghost.lastUpdate = (new Date).getTime();
             break;
         case 40:  // down
         case 83:  // s
-            ghost.speedZ = ghost.maxSpeed;
+            ghost.changeSpeed(0,0,ghost.maxSpeed);
             ghost.lastUpdate = (new Date).getTime();
             break;
         case 38:  // up
         case 90: // z
-            ghost.speedZ = -ghost.maxSpeed;
+            ghost.changeSpeed(0,0,-ghost.maxSpeed);
             ghost.lastUpdate = (new Date).getTime();
             break;
 
     }
-    // trigonometric computations to change direction of cursor/camera translations depending on the current angle
-    let ta = utils.degToRad(angle);
-    let dx = Math.round(Math.cos(-ta)*deltax+Math.sin(-ta)*deltaz);
-    let dz = Math.round(-Math.sin(-ta)*deltax+Math.cos(-ta)*deltaz);
-
-    deltax=dx;
-    deltaz=dz;
-
-    cx += deltax*STEP;
-    cy += deltay*STEP;
-    cz += deltaz*STEP;
-
-    // updates cursor position in our grid coordinates system
-    cursor.x+=deltax;
-    cursor.y+=deltay;
-    cursor.z+=deltaz;
-
-    // updates cursor position in world coordinates handled by openGL
-    for(i=0; i<cursor.vertices.length; i+=3){
-        cursor.vertices[i]+=deltax*STEP;
-        cursor.vertices[i+1]+=deltay*STEP;
-        cursor.vertices[i+2]+=deltaz*STEP;
-    }
-    cursor.updateBuffers();
-
     window.requestAnimationFrame(drawScene);
 }
 
@@ -182,17 +159,21 @@ function keyUpPlayFunction(e){
         case 39:  // right
         case 68:  // d
             ghost.speedX = 0;
+            ghost.speedZ = 0;
             break;
         case 37:  // left
         case 81: // q
             ghost.speedX = 0;
+            ghost.speedZ = 0;
             break;
         case 40:  // down
         case 83:  // s
+            ghost.speedX = 0;
             ghost.speedZ = 0;
             break;
         case 38:  // up
         case 90: // z
+            ghost.speedX = 0;
             ghost.speedZ = 0;
             break;
 
@@ -204,11 +185,15 @@ function keyUpPlayFunction(e){
 var mouseState = false;
 var lastMouseX = -100, lastMouseY = -100;
 function doMouseDown(event) {
+    if(event.button===2)
+        currentlyRightClicking=true;
     lastMouseX = event.pageX;
     lastMouseY = event.pageY;
     mouseState = true;
 }
 function doMouseUp(event) {
+    if(event.button===2)
+        currentlyRightClicking=false;
     lastMouseX = -100;
     lastMouseY = -100;
     mouseState = false;
@@ -220,9 +205,14 @@ function doMouseMove(event) {
         lastMouseX = event.pageX;
         lastMouseY = event.pageY;
 
-        if((dx != 0) || (dy != 0)) {
+        if((dx !== 0) || (dy !== 0)) {
             angle = angle + 0.5 * dx;
             elevation = Math.min(Math.max(elevation + 0.5 * dy, -90), 90);
+
+            if(currentlyRightClicking) {
+                ghost.computeRotate(0.5*dx);
+                angle = ghost.yRotate;
+            }
         }
         drawScene();
     }

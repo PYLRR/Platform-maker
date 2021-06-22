@@ -32,7 +32,7 @@ class Ghost {
         this.z=STEP/2;
 
         this.translate=utils.MakeTranslateMatrix(this.x,this.y,this.z);
-        this.quaternion=Quaternion.fromEuler(utils.degToRad(0),utils.degToRad(0),utils.degToRad(-90), "ZXY");
+        this.yRotate = 0;
 
         this.maxSpeed=STEP*5;
 
@@ -69,6 +69,7 @@ class Ghost {
         this.lastUpdate=now;
     }
 
+    // moves the ghost according to the elapsed time since this.lastUpdate
     computeTranslate(){
         currentTime = (new Date).getTime();
         let delta = (currentTime - this.lastUpdate) / 1000.0;
@@ -108,5 +109,24 @@ class Ghost {
 
         this.lastUpdate = currentTime;
         this.translate = utils.MakeTranslateMatrix(this.x,this.y,this.z);
+    }
+
+    // rotates the ghost according to a given angle
+    computeRotate(angle){
+        ghost.yRotate += angle;
+
+        this.speedX = this.speedX*Math.cos(utils.degToRad(angle)) -
+            this.speedZ*Math.sin(utils.degToRad(angle));
+        this.speedZ = this.speedZ*Math.cos(utils.degToRad(angle)) +
+            this.speedX*Math.sin(utils.degToRad(angle));
+    }
+
+    // changes the speed of the ghost, taking rotation into account
+    changeSpeed(ddx, ddy, ddz){
+        this.speedX = ddx*Math.cos(utils.degToRad(this.yRotate)) -
+            ddz*Math.sin(utils.degToRad(this.yRotate));
+        this.speedY = ddy;
+        this.speedZ = ddz*Math.cos(utils.degToRad(this.yRotate)) +
+            ddx*Math.sin(utils.degToRad(this.yRotate));
     }
 }

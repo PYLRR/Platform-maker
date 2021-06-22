@@ -81,7 +81,7 @@ function drawScene() {
 
         // set transforms
         gl.uniformMatrix4fv(tMatrixLocation, gl.FALSE, utils.transposeMatrix(
-            utils.multiplyMatrices(ghost.translate,ghost.quaternion.toMatrix4()))
+                utils.multiplyMatrices(ghost.translate,utils.MakeRotateYMatrix(ghost.yRotate+90)))
         );
 
         drawObject(ghost.positionBuffer, ghost.indicesBuffer, ghost.indices.length ,ghost.colorBuffer,
