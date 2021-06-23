@@ -65,6 +65,10 @@ class Ghost {
         this.speedY=-this.maxSpeed;
         this.speedZ=0;
 
+        // these two components are used to know speed in the new coordinates after a rotation
+        this.speedXAfterRotate=0;
+        this.speedZAfterRotate=0;
+
         let now = (new Date).getTime();
         this.lastUpdate=now;
     }
@@ -74,27 +78,22 @@ class Ghost {
         currentTime = (new Date).getTime();
         let delta = (currentTime - this.lastUpdate) / 1000.0;
 
-        let dx = delta * this.speedX;
-        let dz = delta * this.speedZ;
-        // y is a special case : we have to take gravity into account
+        let dx = delta * this.speedXAfterRotate;
+        let dz = delta * this.speedZAfterRotate;
         let dy = delta * this.speedY;
-        if(this.speedY>-this.maxSpeed){
-            dy += Math.pow(delta,2)*GRAVITY_A/2;
-            this.speedY = Math.max(-this.maxSpeed,this.speedY+delta*GRAVITY_A);
-        }
 
         // formulas of expected coordinates : current+speed+offsetGhostDimensions+offsetStartingPos
-        let dirx = Math.sign(this.speedX/this.maxSpeed);
+        let dirx = Math.sign(this.speedXAfterRotate/this.maxSpeed);
         let xGrid = Math.ceil(ghost.x/STEP)-1;
         let xGridExpected = Math.ceil(ghost.x/STEP+dx/STEP+7*dirx/16-0.95);
 
-        let diry = Math.sign(dy/this.maxSpeed);
+        let diry = Math.sign(dy-0.01); // always look down if we are not moving, because of gravity
         let yGrid = Math.ceil(ghost.y/STEP)-1;
-        let yGridExpected = Math.ceil(ghost.y/STEP+dy/STEP+diry/2-0.85);
+        let yGridExpected = Math.ceil(ghost.y/STEP+dy/STEP+diry*0.4-0.9);
 
-        let dirz = Math.sign(this.speedZ/this.maxSpeed);
+        let dirz = Math.sign(this.speedZAfterRotate/this.maxSpeed);
         let zGrid = Math.ceil(ghost.z/STEP)-1;
-        let zGridExpected = Math.ceil(ghost.z/STEP+dz/STEP+dirz/2-0.9);
+        let zGridExpected = Math.ceil(ghost.z/STEP+dz/STEP+dirz*0.45-0.95);
 
         if(getBlockAt(xGridExpected, yGrid, zGrid) == null) {
             this.x += dx;
@@ -102,8 +101,15 @@ class Ghost {
         if(getBlockAt(xGrid, yGrid, zGridExpected) == null) {
             this.z += dz;
         }
+        // y is a special case : we have to take gravity into account
         if(getBlockAt(xGrid, yGridExpected, zGrid) == null) {
+            if(this.speedY>-this.maxSpeed){
+                dy += Math.pow(delta,2)*GRAVITY_A/2;
+                this.speedY = Math.max(-this.maxSpeed,this.speedY+delta*GRAVITY_A);
+            }
             this.y += dy;
+        }else{
+            this.speedY = 0;
         }
 
 
@@ -115,18 +121,20 @@ class Ghost {
     computeRotate(angle){
         ghost.yRotate += angle;
 
-        this.speedX = this.speedX*Math.cos(utils.degToRad(angle)) -
-            this.speedZ*Math.sin(utils.degToRad(angle));
-        this.speedZ = this.speedZ*Math.cos(utils.degToRad(angle)) +
-            this.speedX*Math.sin(utils.degToRad(angle));
+        this.speedXAfterRotate = this.speedXAfterRotate*Math.cos(utils.degToRad(angle)) -
+            this.speedZAfterRotate*Math.sin(utils.degToRad(angle));
+        this.speedZAfterRotate = this.speedZAfterRotate*Math.cos(utils.degToRad(angle)) +
+            this.speedXAfterRotate*Math.sin(utils.degToRad(angle));
     }
 
     // changes the speed of the ghost, taking rotation into account
-    changeSpeed(ddx, ddy, ddz){
-        this.speedX = ddx*Math.cos(utils.degToRad(this.yRotate)) -
-            ddz*Math.sin(utils.degToRad(this.yRotate));
-        this.speedY = ddy;
-        this.speedZ = ddz*Math.cos(utils.degToRad(this.yRotate)) +
-            ddx*Math.sin(utils.degToRad(this.yRotate));
+    changeSpeed(dx, dy, dz){
+        this.speedX = dx;
+        this.speedY = dy;
+        this.speedZ = dz;
+        this.speedXAfterRotate = this.speedX*Math.cos(utils.degToRad(this.yRotate)) -
+            this.speedZ*Math.sin(utils.degToRad(this.yRotate));
+        this.speedZAfterRotate = this.speedZ*Math.cos(utils.degToRad(this.yRotate)) +
+            this.speedX*Math.sin(utils.degToRad(this.yRotate));
     }
 }

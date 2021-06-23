@@ -13,10 +13,13 @@ var normalMatrix;
 var directionalLight;
 var directionalLightTransformed;
 
-
+var elapsedTime = 0;
+var frameCount = 0;
+var lastTime = 0;
 
 function drawScene() {
 
+    // center view on the ghost if we're playing
     if(PLAY_MODE){
         cx = ghost.x;
         cy = ghost.y;
@@ -61,7 +64,7 @@ function drawScene() {
     gl.uniformMatrix4fv(tMatrixLocation, gl.FALSE, utils.identityMatrix());
 
     // cursor
-    if(!PLAY_MODE) {
+   if(!PLAY_MODE) {
         gl.uniform1f(transparencyLocation, 0.75);
         drawObject(cursor.positionBuffer, cursor.indicesBuffer, cursor.indices.length, cursor.colorBuffer,
             cursor.uvBuffer, cursor.normalsBuffer, gl.TRIANGLES, cursor.texture);
@@ -88,7 +91,19 @@ function drawScene() {
             null, ghost.normalsBuffer, gl.TRIANGLES, 0);
     }
 
-    //setTimeout(drawScene,100);
+    // FPS count
+    var now = new Date().getTime();
+    frameCount++;
+    elapsedTime += (now - lastTime);
+    lastTime = now;
+    if(elapsedTime >= 1000) {
+        fps = frameCount;
+        frameCount = 0;
+        elapsedTime = 0;
+        document.getElementById('fps').innerHTML = "FPS : "+fps;
+    }
+
+
     window.requestAnimationFrame(drawScene);
 }
 

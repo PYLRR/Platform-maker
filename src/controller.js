@@ -107,8 +107,6 @@ function keyDownFunction(e){
         cursor.vertices[i+2]+=deltaz*STEP;
     }
     cursor.updateBuffers();
-
-    window.requestAnimationFrame(drawScene);
 }
 
 
@@ -125,31 +123,30 @@ function keyDownPlayFunction(e){
         case 13:  // enter
             break;
         case 32:  // space
-            ghost.changeSpeed(0,ghost.maxSpeed,0);
+            ghost.changeSpeed(ghost.speedX,ghost.maxSpeed,ghost.speedZ);
             break;
         case 39:  // right
         case 68:  // d
-            ghost.changeSpeed(ghost.maxSpeed,0,0);
+            ghost.changeSpeed(ghost.maxSpeed,ghost.speedY,ghost.speedZ);
             ghost.lastUpdate = (new Date).getTime();
             break;
         case 37:  // left
         case 81: // q
-            ghost.changeSpeed(-ghost.maxSpeed,0,0);
+            ghost.changeSpeed(-ghost.maxSpeed,ghost.speedY,ghost.speedZ);
             ghost.lastUpdate = (new Date).getTime();
             break;
         case 40:  // down
         case 83:  // s
-            ghost.changeSpeed(0,0,ghost.maxSpeed);
+            ghost.changeSpeed(ghost.speedX,ghost.speedY,ghost.maxSpeed);
             ghost.lastUpdate = (new Date).getTime();
             break;
         case 38:  // up
         case 90: // z
-            ghost.changeSpeed(0,0,-ghost.maxSpeed);
+            ghost.changeSpeed(ghost.speedX,ghost.speedY,-ghost.maxSpeed);
             ghost.lastUpdate = (new Date).getTime();
             break;
 
     }
-    window.requestAnimationFrame(drawScene);
 }
 
 
@@ -158,25 +155,20 @@ function keyUpPlayFunction(e){
     switch (e.keyCode) {
         case 39:  // right
         case 68:  // d
-            ghost.speedX = 0;
-            ghost.speedZ = 0;
+            ghost.changeSpeed(0,ghost.speedY,ghost.speedZ);
             break;
         case 37:  // left
         case 81: // q
-            ghost.speedX = 0;
-            ghost.speedZ = 0;
+            ghost.changeSpeed(0,ghost.speedY,ghost.speedZ);
             break;
         case 40:  // down
         case 83:  // s
-            ghost.speedX = 0;
-            ghost.speedZ = 0;
+            ghost.changeSpeed(ghost.speedX,ghost.speedY,0);
             break;
         case 38:  // up
         case 90: // z
-            ghost.speedX = 0;
-            ghost.speedZ = 0;
+            ghost.changeSpeed(ghost.speedX,ghost.speedY,0);
             break;
-
     }
 }
 
@@ -214,7 +206,6 @@ function doMouseMove(event) {
                 angle = ghost.yRotate;
             }
         }
-        drawScene();
     }
 }
 function doMouseWheel(event) {
@@ -222,6 +213,5 @@ function doMouseWheel(event) {
     if((nLookRadius > STEP+0.75) && (nLookRadius < STEP*50)) {
         lookRadius = nLookRadius;
     }
-    drawScene();
 }
 
