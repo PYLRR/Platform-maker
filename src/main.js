@@ -8,8 +8,8 @@ var projectionMatrix,
   perspectiveMatrix,
   viewMatrix, worldMatrix,
   positionAttributeLocation, colorAttributeLocation,uvAttributeLocation,textLocation,normalAttributeLocation,
-  dirLocation,lightColorLocation,eyePosLocation,specularColorLocation,specShineLocation,ambientLightColorLocation,
-  transparencyLocation;
+  dirLocation,lightColorLocation,eyePosLocation,specularColorLocation,specShineLocation,orenNayarRoughnessLocation,
+    ambientLightColorLocation,  transparencyLocation;
 
 //Objects will be localized in a grid of squares of this size, centralized at opengl (0,0)
 var STEP = 0.25;
@@ -68,97 +68,8 @@ var lightColor = [1.0,1.0,1.0,1.0];
 var specularColor = [1.0,1.0,1.0,1.0];
 var ambientLightColor = [0.1,0.1,0.1,1.0];
 var specShine = 300.0;
+var orenNayarRoughness = 0.6;
 
-var vertexShaderSource = `#version 300 es
-
-in vec3 a_position;
-in vec3 a_color;
-in vec2 a_uv;
-in vec3 a_norm;
-
-out vec2 uvFS;
-out vec3 colorV;
-out vec3 fs_norm;
-out vec3 fs_pos;
-
-uniform mat4 pMatrix;
-uniform mat4 matrix;
-uniform mat4 tMatrix;
-uniform mat4 nMatrix;
-
-void main() {
-  colorV = a_color;
-  uvFS = a_uv;
-  fs_norm = mat3(nMatrix) * a_norm;
-  fs_pos = (pMatrix * vec4(a_position, 1.0)).xyz;
-  gl_Position = matrix * tMatrix * vec4(a_position,1.0);
-}
-`;
-
-var fragmentShaderSource = `#version 300 es
-
-precision mediump float;
-
-
-in vec3 colorV;
-in vec2 uvFS;
-in vec3 fs_norm;
-in vec3 fs_pos;
-
-uniform vec3 Dir;
-uniform vec4 lightColor;
-uniform vec4 specularColor;
-uniform vec4 ambientLightColor;
-uniform float SpecShine;
-uniform float Transparency;
-uniform vec3 eyePos;
-
-out vec4 outColor;
-
-uniform sampler2D u_texture;
-
-vec4 compDiffuse(vec3 lightDir, vec4 lightCol, vec3 normalVec, vec4 diffColor) {
-	// Diffuse
-	// --> Lambert
-	vec4 diffuseLambert = lightCol * clamp(dot(normalVec, lightDir),0.0,1.0) * diffColor;
-	// ----> Select final component
-	return diffuseLambert;
-}
-
-vec4 compSpecular(vec3 lightDir, vec4 lightCol, vec3 normalVec, vec3 eyedirVec) {
-	// Specular
-	// --> Blinn
-	vec3 halfVec = normalize(lightDir + eyedirVec);
-	vec4 specularBlinn = lightCol * pow(max(dot(normalVec, halfVec), 0.0), SpecShine) * specularColor;
-
-	// ----> Select final component
-	return specularBlinn;
-}
-
-void main() {
-  //outColor = vec4(colorV,1.0);
-  vec4 texcol = texture(u_texture, uvFS) * vec4(colorV,1.0);
-  
-  vec3 normalVec = normalize(fs_norm);
-  vec3 eyedirVec = normalize(-fs_pos);
-  vec3 nLightDirection = normalize(-Dir);
-  
-  // Ambient
-	vec4 ambient = ambientLightColor * texcol;
-  // Diffuse
-	vec4 diffuse = compDiffuse(nLightDirection, lightColor, normalVec, texcol);
-  // Specular
-	// --> Phong
-	vec4 specular = compSpecular(nLightDirection, lightColor, normalVec, eyedirVec);
-  vec4 out_color = clamp(ambient + diffuse + specular, 0.0, 1.0);
-
-  outColor = vec4(out_color.rgb, Transparency);
-}
-`;
-var posb;
-var cb;
-var nb;
-var ib;
 
 function main() {
 
@@ -247,6 +158,7 @@ function main() {
   eyePosLocation = gl.getUniformLocation(program,"eyePos");
   specularColorLocation = gl.getUniformLocation(program, "specularColor");
   specShineLocation = gl.getUniformLocation(program, "SpecShine");
+  orenNayarRoughnessLocation = gl.getUniformLocation(program, "OrenNayarRoughness");
   ambientLightColorLocation = gl.getUniformLocation(program, "ambientLightColor");
   transparencyLocation = gl.getUniformLocation(program, "Transparency");
 

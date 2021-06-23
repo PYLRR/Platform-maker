@@ -13,6 +13,7 @@ var normalMatrix;
 var directionalLight;
 var directionalLightTransformed;
 
+// parameters for the FPS calculation
 var elapsedTime = 0;
 var frameCount = 0;
 var lastTime = 0;
@@ -58,6 +59,7 @@ function drawScene() {
     gl.uniform4fv(specularColorLocation,specularColor);
     gl.uniform4fv(ambientLightColorLocation,ambientLightColor);
     gl.uniform1f(specShineLocation,specShine);
+    gl.uniform1f(orenNayarRoughnessLocation,orenNayarRoughness);
     gl.uniform3f(eyePosLocation, final_cx, final_cy, final_cz);
 
     // set transform to identity
@@ -88,7 +90,7 @@ function drawScene() {
         );
 
         drawObject(ghost.positionBuffer, ghost.indicesBuffer, ghost.indices.length ,ghost.colorBuffer,
-            null, ghost.normalsBuffer, gl.TRIANGLES, 0);
+            null, ghost.normalsBuffer, gl.TRIANGLES, 1);
     }
 
     // FPS count
@@ -136,3 +138,110 @@ function drawObject(positionBuffer, indicesBuffer, nbIndices, colorBuffer, uvBuf
 
     gl.drawElements(mode, nbIndices, gl.UNSIGNED_SHORT, 0 );
 }
+
+
+
+var vertexShaderSource = `#version 300 es
+
+in vec3 a_position;
+in vec3 a_color;
+in vec2 a_uv;
+in vec3 a_norm;
+
+out vec2 uvFS;
+out vec3 colorV;
+out vec3 fs_norm;
+out vec3 fs_pos;
+
+uniform mat4 pMatrix;
+uniform mat4 matrix;
+uniform mat4 tMatrix;
+uniform mat4 nMatrix;
+
+void main() {
+  colorV = a_color;
+  uvFS = a_uv;
+  fs_norm = mat3(nMatrix) * a_norm;
+  fs_pos = (pMatrix * vec4(a_position, 1.0)).xyz;
+  gl_Position = matrix * tMatrix * vec4(a_position,1.0);
+}
+`;
+
+var fragmentShaderSource = `#version 300 es
+
+precision mediump float;
+
+
+in vec3 colorV;
+in vec2 uvFS;
+in vec3 fs_norm;
+in vec3 fs_pos;
+
+uniform vec3 Dir;
+uniform vec4 lightColor;
+uniform vec4 specularColor;
+uniform vec4 ambientLightColor;
+uniform float SpecShine;
+uniform float OrenNayarRoughness;
+uniform float Transparency;
+uniform vec3 eyePos;
+
+out vec4 outColor;
+
+uniform sampler2D u_texture;
+
+vec4 compDiffuse(vec3 lightDir, vec4 lightCol, vec3 normalVec, vec3 eyeDirVec, vec4 diffColor) {
+	// Diffuse
+	// --> Lambert
+	vec4 diffuseLambert = lightCol * clamp(dot(normalVec, lightDir),0.0,1.0) * diffColor;
+	// --> Oren-Nayar
+	// 2 parameters
+	float sigma = OrenNayarRoughness; // roughness
+	vec4 md = diffColor; // main color
+	
+	float tetai = acos(dot(normalVec,lightDir));
+	float tetar = acos(dot(normalVec,eyeDirVec));
+	float alpha = max(tetai,tetar);
+	float beta = min(tetai,tetar);
+	float A = 1.0 - 0.5*sigma*sigma/(sigma*sigma+0.33);
+	float B = 0.45*sigma*sigma/(sigma*sigma+0.09);
+	vec3 vi = normalize(lightDir - dot(normalVec,lightDir)*normalVec);
+	vec3 vr = normalize(eyeDirVec - dot(normalVec,eyeDirVec)*normalVec);
+	float G = max(0.0, dot(vi,vr));
+	vec4 L = md*clamp(dot(normalVec, lightDir),0.0,1.0);
+	vec4 diffuseOrenNayar = L*(A+B*G*sin(alpha)*tan(beta));
+	
+	// ----> Select final component
+	return diffuseOrenNayar;
+}
+
+vec4 compSpecular(vec3 lightDir, vec4 lightCol, vec3 normalVec, vec3 eyedirVec) {
+	// Specular
+	// --> Blinn
+	vec3 halfVec = normalize(lightDir + eyedirVec);
+	vec4 specularBlinn = lightCol * pow(max(dot(normalVec, halfVec), 0.0), SpecShine) * specularColor;
+
+	// ----> Select final component
+	return specularBlinn;
+}
+
+void main() {
+  //outColor = vec4(colorV,1.0);
+  vec4 texcol = texture(u_texture, uvFS) * vec4(colorV,1.0);
+  
+  vec3 normalVec = normalize(fs_norm);
+  vec3 eyedirVec = normalize(-fs_pos);
+  vec3 nLightDirection = normalize(-Dir);
+  
+  // Ambient
+	vec4 ambient = ambientLightColor * texcol;
+  // Diffuse
+	vec4 diffuse = compDiffuse(nLightDirection, lightColor, normalVec, eyedirVec, texcol);
+  // Specular
+	// --> Phong
+	vec4 specular = compSpecular(nLightDirection, lightColor, normalVec, eyedirVec);
+  vec4 out_color = clamp(ambient + diffuse + specular, 0.0, 1.0);
+
+  outColor = vec4(out_color.rgb, Transparency);
+}
+`;
