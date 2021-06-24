@@ -28,9 +28,6 @@ var ghost;
 
 //Parameters cursor. Its coordinates are in the global grid
 var cursorColor = createColorForBlock(0.5,0.5,1.0);
-
-
-
 var cursor;
 
 //Parameters for blocks

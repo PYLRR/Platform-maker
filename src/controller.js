@@ -116,9 +116,6 @@ function keyUpFunction(e){
 
 // key press when PLAY MODE is on
 function keyDownPlayFunction(e){
-    let deltax=0;
-    let deltay=0;
-    let deltaz=0;
     switch (e.keyCode) {
         case 13:  // enter
             break;

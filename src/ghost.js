@@ -82,6 +82,7 @@ class Ghost {
         let dz = delta * this.speedZAfterRotate;
         let dy = delta * this.speedY;
 
+        // computation for collision
         // formulas of expected coordinates : current+speed+offsetGhostDimensions+offsetStartingPos
         let dirx = Math.sign(this.speedXAfterRotate/this.maxSpeed);
         let xGrid = Math.ceil(ghost.x/STEP)-1;
