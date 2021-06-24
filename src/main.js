@@ -63,9 +63,9 @@ var Rz = 0.0;
 
 //Parameters for the direct light
 var theta = -utils.degToRad(60);
-var phi = -utils.degToRad(45);
+var phi = -utils.degToRad(90);
 var lightColor = [1.0,1.0,1.0,1.0];
-var specularColor = [1.0,1.0,1.0,1.0];
+var specularColor = [0.3,0.3,0.3,1.0];
 var ambientLightColor = [0.1,0.1,0.1,1.0];
 var specShine = 300.0;
 var orenNayarRoughness = 0.6;
