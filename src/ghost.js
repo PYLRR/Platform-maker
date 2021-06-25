@@ -90,7 +90,7 @@ class Ghost {
 
         let diry = Math.sign(dy-0.01); // always look down if we are not moving, because of gravity
         let yGrid = Math.ceil(ghost.y/STEP)-1;
-        let yGridExpected = Math.ceil(ghost.y/STEP+dy/STEP+diry*0.4-0.9);
+        let yGridExpected = Math.ceil(ghost.y/STEP+dy/STEP+diry*0.4-1.0);
 
         let dirz = Math.sign(this.speedZAfterRotate/this.maxSpeed);
         let zGrid = Math.ceil(ghost.z/STEP)-1;

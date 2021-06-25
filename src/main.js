@@ -63,7 +63,7 @@ var theta = -utils.degToRad(60);
 var phi = -utils.degToRad(90);
 var lightColor = [1.0,1.0,1.0,1.0];
 var specularColor = [0.3,0.3,0.3,1.0];
-var ambientLightColor = [0.1,0.1,0.1,1.0];
+var ambientLightColor = [0.35,0.35,0.35,1.0];
 var specShine = 300.0;
 var orenNayarRoughness = 0.6;
 
@@ -96,14 +96,13 @@ function main() {
   }
   utils.resizeCanvasToDisplaySize(gl.canvas);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  gl.clearColor(0, 0, 0, 0);
+  gl.clearColor(0.53, 0.8, 0.98, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.enable(gl.DEPTH_TEST);
   //Setting the size for the canvas equal to half the browser window
   var w=canvas.clientWidth;
   var h=canvas.clientHeight;
   
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.viewport(0.0, 0.0, w, h);
 
   // create GLSL shaders, upload the GLSL source, compile the shaders and link them

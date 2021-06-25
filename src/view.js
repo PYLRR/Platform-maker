@@ -19,6 +19,7 @@ var frameCount = 0;
 var lastTime = 0;
 
 function drawScene() {
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // center view on the ghost if we're playing
     if(PLAY_MODE){
@@ -26,8 +27,6 @@ function drawScene() {
         cy = ghost.y;
         cz = ghost.z;
     }
-
-
 
     worldMatrix = utils.MakeWorld(0.0,0.0,0.0,0.0,0.0,Rz,S);
 
@@ -67,7 +66,7 @@ function drawScene() {
 
     // cursor
    if(!PLAY_MODE) {
-        gl.uniform1f(transparencyLocation, 0.75);
+        gl.uniform1f(transparencyLocation, 0.7);
         drawObject(cursor.positionBuffer, cursor.indicesBuffer, cursor.indices.length, cursor.colorBuffer,
             cursor.uvBuffer, cursor.normalsBuffer, gl.TRIANGLES, cursor.texture);
         gl.uniform1f(transparencyLocation, 1.0); // unset transparency
@@ -133,7 +132,6 @@ function drawObject(positionBuffer, indicesBuffer, nbIndices, colorBuffer, uvBuf
     gl.enableVertexAttribArray(normalAttributeLocation);
     gl.vertexAttribPointer(normalAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 
-    // blocks
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
 
     gl.drawElements(mode, nbIndices, gl.UNSIGNED_SHORT, 0 );
