@@ -41,6 +41,7 @@ var textureIDEnum = Object.freeze(
     ["dirt","sand","stone","wood"]
 );
 var texturesVector = []; // will contain the different textures
+var textureGhost; // will contain the private texture of the ghost
 
 
 //Parameters for Camera
@@ -137,6 +138,21 @@ function main() {
       }
     });
   }
+
+  let texture = gl.createTexture();
+  textureGhost = texture;
+  texture.image = new Image();
+  texture.image.src = baseDir + "white.png";
+  texture.image.onload = (function()
+  {
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  });
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
   // look up where the vertex data needs to go.

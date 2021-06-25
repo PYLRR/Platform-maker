@@ -57,7 +57,7 @@ function keyDownFunction(e){
         case 40:  // down
             deltaz=1;
             break;
-        case 46:  // suppr : delete a block
+        case 46:  // suppr : deletes a block
             block = getBlockAt(cursor.x, cursor.y, cursor.z);
             if(block != null){
                 index = blocks.indexOf(block);
@@ -142,7 +142,6 @@ function keyDownPlayFunction(e){
             ghost.changeSpeed(ghost.speedX,ghost.speedY,-ghost.maxSpeed);
             ghost.lastUpdate = (new Date).getTime();
             break;
-
     }
 }
 
@@ -198,7 +197,7 @@ function doMouseMove(event) {
             angle = angle + 0.5 * dx;
             elevation = Math.min(Math.max(elevation + 0.5 * dy, -90), 90);
 
-            if(currentlyRightClicking) {
+            if(currentlyRightClicking && PLAY_MODE) {
                 ghost.computeRotate(0.5*dx);
                 angle = ghost.yRotate;
             }

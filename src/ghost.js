@@ -7,6 +7,7 @@ class Ghost {
         this.vertices = this.mesh.vertices;
         this.normals = this.mesh.vertexNormals;
         this.indices = this.mesh.indices;
+        this.UVcoordinates = [];
 
         // correction of vertices
         for(let i=0; i<this.vertices.length; i+=3){
@@ -25,6 +26,12 @@ class Ghost {
             this.colors.push(1.0);
             this.colors.push(1.0);
             this.colors.push(1.0);
+        }
+        // creates UV coordinates
+        for(let i=0; i<this.vertices.length; i+=3){
+            // scales the ghost
+            this.UVcoordinates.push(0.0);
+            this.UVcoordinates.push(1.0);
         }
 
         this.x=STEP/2;
@@ -51,6 +58,11 @@ class Ghost {
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.STATIC_DRAW);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.UVcoordinates), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(uvAttributeLocation);
+        gl.vertexAttribPointer(uvAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.normalsBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.STATIC_DRAW);

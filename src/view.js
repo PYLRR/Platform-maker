@@ -89,7 +89,7 @@ function drawScene() {
         );
 
         drawObject(ghost.positionBuffer, ghost.indicesBuffer, ghost.indices.length ,ghost.colorBuffer,
-            null, ghost.normalsBuffer, gl.TRIANGLES, 1);
+            ghost.uvBuffer, ghost.normalsBuffer, gl.TRIANGLES, -1);
     }
 
     // FPS count
@@ -110,7 +110,10 @@ function drawScene() {
 
 function drawObject(positionBuffer, indicesBuffer, nbIndices, colorBuffer, uvBuffer, normalsBuffer, mode, texture){
     //Set for texture
-    gl.bindTexture(gl.TEXTURE_2D, texturesVector[texture]);
+    if(texture===-1)
+        gl.bindTexture(gl.TEXTURE_2D, textureGhost);
+    else
+        gl.bindTexture(gl.TEXTURE_2D, texturesVector[texture]);
     gl.uniform1i(textLocation, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -122,11 +125,11 @@ function drawObject(positionBuffer, indicesBuffer, nbIndices, colorBuffer, uvBuf
     gl.enableVertexAttribArray(colorAttributeLocation);
     gl.vertexAttribPointer(colorAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 
-    if(uvBuffer != null) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
-        gl.enableVertexAttribArray(uvAttributeLocation);
-        gl.vertexAttribPointer(uvAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+    gl.enableVertexAttribArray(uvAttributeLocation);
+    gl.vertexAttribPointer(uvAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
 
     gl.bindBuffer(gl.ARRAY_BUFFER, normalsBuffer);
     gl.enableVertexAttribArray(normalAttributeLocation);
